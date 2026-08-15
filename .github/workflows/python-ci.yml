@@ -1,0 +1,33 @@
+name: Funnel Analytics CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  analytics-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: python -m pytest -q
+      - name: Execute full analytics pipeline
+        run: python -m src.run_analysis
+      - name: Validate generated deliverables
+        run: |
+          test -s outputs/executive_summary.csv
+          test -s outputs/funnel_summary.csv
+          test -s outputs/funnel_by_device.csv
+          test -s outputs/funnel_by_channel.csv
+          test -s outputs/journey_outcomes.csv
+          test -s outputs/device_friction.csv
+          test -s outputs/channel_friction.csv
+          test -s outputs/funnel_overview.png
+          test -s outputs/device_conversion.png
